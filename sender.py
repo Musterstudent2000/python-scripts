@@ -1,12 +1,21 @@
-"""Demonstrates how to construct and send raw Ethernet packets on the network.
-You probably need root privs to be able to bind to the network interface,
-e.g.:
-$ sudo python sendeth.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Demonstrates how to construct and send raw Ethernet packets on the network.
 """
 
-from sys import platform
-from socket import *
-import time
+import os, socket, sys, time
+
+def checkSystem():
+    if not (sys.platform == "linux" or sys.platform == "linux2"):
+        print("This script is only for Linux!")
+        result = input("Press Enter to continue...")
+        sys.exit(0)
+
+def checkLinuxRoot():
+  if not os.geteuid() == 0:
+    sys.exit('This script must be run as root!')
 
 def sendeth(data, interface = "eno1"):
   s = socket(AF_PACKET, SOCK_RAW)
@@ -14,6 +23,9 @@ def sendeth(data, interface = "eno1"):
   return s.send(data)
 
 if __name__ == "__main__":
+  checkSystem()
+  checkLinuxRoot()
+
   last_mode = ["", ""]
 
   frame = [
