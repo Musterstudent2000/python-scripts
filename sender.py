@@ -1,19 +1,29 @@
-"""Demonstrates how to construct and send raw Ethernet packets on the network.
-You probably need root privs to be able to bind to the network interface,
-e.g.:
-$ sudo python sendeth.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Demonstrates how to construct and send raw Ethernet packets on the network.
 """
 
-from sys import platform
-from socket import *
-import time
+import os, socket, sys, time
 
-def sendeth(data, interface = "eno1"):
+def checkSystem():
+    if not (sys.platform == "linux" or sys.platform == "linux2"):
+      sys.exit("This script is only for Linux!")
+
+def checkLinuxRoot():
+  if not os.geteuid() == 0:
+    sys.exit('This script must be run as root!')
+
+def sendNetworkInterface(data, interface = "eno1"):
   s = socket(AF_PACKET, SOCK_RAW)
   s.bind((interface, 0))
   return s.send(data)
 
 if __name__ == "__main__":
+  checkSystem()
+  checkLinuxRoot()
+
   last_mode = ["", ""]
 
   frame = [
@@ -54,7 +64,7 @@ if __name__ == "__main__":
     if mode_array[0] == "reset":
       frame[13] = 0x34
       print("Sent %d-byte Ethernet packet on eth0" %
-        sendeth(bytearray(frame)))
+        sendNetworkInterface(bytearray(frame)))
 
     elif mode_array[0] == "config":
       if len(mode_array) != 4:
@@ -69,19 +79,19 @@ if __name__ == "__main__":
         frame[47] = 1 # status
         frame[46] = int(mode_array[1]) # baud index
         print("Sent %d-byte Ethernet packet on eth0" %
-          sendeth(bytearray(frame)))
+          sendNetworkInterface(bytearray(frame)))
         time.sleep(0.5)
         frame[30] = 2 # can port
         frame[47] = 1 # status
         frame[46] = int(mode_array[2]) # baud index
         print("Sent %d-byte Ethernet packet on eth0" %
-          sendeth(bytearray(frame)))
+          sendNetworkInterface(bytearray(frame)))
         time.sleep(0.5)
         frame[30] = 3 # can port
         frame[47] = 1 # status
         frame[46] = int(mode_array[3]) # baud index
         print("Sent %d-byte Ethernet packet on eth0" %
-          sendeth(bytearray(frame)))
+          sendNetworkInterface(bytearray(frame)))
 
     elif mode_array[0] == "data":
       if len(mode_array) == 2:
@@ -89,7 +99,7 @@ if __name__ == "__main__":
         frame[30] = int(mode_array[1]) # can port
         frame[31] = 0 # command flag
         print("Sent %d-byte Ethernet packet on eth0" %
-          sendeth(bytearray(frame)))
+          sendNetworkInterface(bytearray(frame)))
 
       elif len(mode_array) > 2:
         frame[13] = 0x33 # ethernet type
@@ -101,7 +111,7 @@ if __name__ == "__main__":
           frame[21+i] = int(mode_array[2+i]) # data definition
         frame[31] = 0 # command flag
         print("Sent %d-byte Ethernet packet on eth0" %
-          sendeth(bytearray(frame)))
+          sendNetworkInterface(bytearray(frame)))
 
       else:
         print("Please type 'reset' to send a reset packet, "
