@@ -9,9 +9,7 @@ import os, socket, sys, time
 
 def checkSystem():
     if not (sys.platform == "linux" or sys.platform == "linux2"):
-        print("This script is only for Linux!")
-        result = input("Press Enter to continue...")
-        sys.exit(0)
+      sys.exit("This script is only for Linux!")
 
 def checkLinuxRoot():
   if not os.geteuid() == 0:
